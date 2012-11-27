@@ -1,0 +1,6 @@
+[submodule "TokenParser"]
+	path = TokenParser
+	url = git@github.com:JacobChrist/TokenParser.git
+[submodule "pic32lib"]
+	path = pic32lib
+	url = git@github.com:JacobChrist/pic32lib.git
