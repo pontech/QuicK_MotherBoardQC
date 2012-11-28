@@ -4,6 +4,7 @@
 #define WantNewLine // todo: 2 comment out before finalized
 
 // Serial USB for Serial
+// Serial0 TTL to Kard Slots
 // Serial1 RS-232
 // Serail2 485 sip
 // Serail3 485 rail
@@ -20,7 +21,7 @@ us8 KardIO[6][6] = {
                     { 78, 79, 10, 20, 33, 85 }, // Kard 5
                    };
 
-us8 KardUnderTest = 2;
+us8 KardUnderTest = 3;
 // Kard 2 does not light one LED on KardDrive
 
 //HardwareSerial& MySerial=Serial1;
@@ -32,21 +33,16 @@ void setup()
   pinMode(led1, OUTPUT);     
   pinMode(led2, OUTPUT);     
 
-  pinMode(KardIO[KardUnderTest][0], OUTPUT);     
-  pinMode(KardIO[KardUnderTest][1], OUTPUT);     
-  pinMode(KardIO[KardUnderTest][2], OUTPUT);     
-  pinMode(KardIO[KardUnderTest][3], OUTPUT);     
-  pinMode(KardIO[KardUnderTest][4], OUTPUT);     
-  pinMode(KardIO[KardUnderTest][5], OUTPUT);     
-
   // initialize serial ports:
   Serial.begin(115200);
+  Serial0.begin(115200);
   Serial1.begin(115200);
   Serial2.begin(115200);
   Serial3.begin(115200);
 
   delay(5000);
   Serial.println("Serial - USB Open");
+  Serial0.println("Serial1 - TTL Kard");
   Serial1.println("Serial1 - RS-232");
   Serial2.println("Serial2 - RS-485");
   Serial3.println("Serial3 - RS-485");
@@ -56,6 +52,10 @@ void setup()
 void loop() {
   static us8 ctr;
   us8 ch;
+  us8 i;
+  e16 num1;//temporary values to parse into
+  e16 num2;
+  e32 num3;
 
   while (MySerial.available() > 0)
   {
@@ -78,15 +78,93 @@ void loop() {
         MySerial.print("no help");
         PrintCR();
       }
-      else if( tokpars.compare("SERIALTEST" ) ) {
+      else if( tokpars.compare("V?",'|') ) {
+        MySerial.print("QuicK-240 Motherboard Quality Control Sofwtare Version x.x");
+        PrintCR();
+      }
+      else if( tokpars.compare("LOOPBACK" ) ) {
         Serial.write('A');
+        Serial0.write('A');
         Serial1.write('A');
         Serial2.write('A');
         Serial3.write('A');
         MySerial.print("OK");
         PrintCR();
       }
+      else if( tokpars.compare("QC.IN" ) ) {
+          for( KardUnderTest = 0; KardUnderTest < 6; KardUnderTest++ ) {
+            for( i = 0; i < 6; i++ ) {
+              pinMode(KardIO[KardUnderTest][i], INPUT);
+            }
+          } 
+          while (MySerial.available() == 0)
+          {
+            for( KardUnderTest = 0; KardUnderTest < 6; KardUnderTest++ ) {
+              MySerial.print("K");
+              MySerial.print(KardUnderTest,DEC);
+              MySerial.print(" ");
+              for( i = 0; i < 6; i++ ) {
+                MySerial.print(digitalRead(KardIO[KardUnderTest][i]));
+                if( i == 3 ) {
+                  MySerial.print(" ");
+                }
+              }
+              MySerial.print(" ");
+            } 
+            PrintCR();
+            delay(50);
+          }
+          ch = MySerial.read();
+          MySerial.print("OK");
+          PrintCR();
+      }
+      else if( tokpars.compare("QC.OUT?" ) ) {
+        tokpars.advanceTail(6);
+        if(tokpars.contains("?"))
+        {
+          MySerial.print(KardUnderTest,DEC);
+          PrintCR();
+        }
+        else
+        {
+          num1 = tokpars.to_e16();
+          KardUnderTest = num1.value;
+          MySerial.print(KardUnderTest,DEC);
+          MySerial.print("-");
+          if (KardUnderTest >= 0 && KardUnderTest <= 5)
+          {
+            for( i = 0; i < 6; i++ ) {
+              pinMode(KardIO[KardUnderTest][i], OUTPUT);
+            }
+            for( i = 0; i < 6; i++ ) {
+              digitalWrite(KardIO[KardUnderTest][i], HIGH);
+              delay(250);
+            }
+            for( i = 0; i < 6; i++ ) {
+              digitalWrite(KardIO[KardUnderTest][i], LOW);
+              delay(250);
+            }
+            for( i = 0; i < 6; i++ ) {
+              pinMode(KardIO[KardUnderTest][i], INPUT);
+            }
+          }
+          else
+          {
+            MySerial.print("N");
+          }
+          MySerial.print("OK");
+          PrintCR();
+        }
+      }
     }
+  }
+
+  while (Serial0.available()) {
+    int inByte = Serial0.read();
+
+    Serial.print("0: You typed: '");
+    Serial.write(inByte); 
+    Serial.println("'");
   }
 
   while (Serial1.available()) {
@@ -115,52 +193,10 @@ void loop() {
 
   digitalWrite(led1, HIGH);   // set the LED on
   digitalWrite(led2, LOW);    // set the LED off
-  digitalWrite(KardIO[KardUnderTest][0], HIGH);
-  digitalWrite(KardIO[KardUnderTest][1], LOW);
-  digitalWrite(KardIO[KardUnderTest][2], LOW);
-  digitalWrite(KardIO[KardUnderTest][3], LOW);
-  digitalWrite(KardIO[KardUnderTest][4], LOW);
-  digitalWrite(KardIO[KardUnderTest][5], LOW);
   delay(250);              // wait for a second
 
   digitalWrite(led1, LOW);    // set the LED off
   digitalWrite(led2, HIGH);   // set the LED on
-  digitalWrite(KardIO[KardUnderTest][0], HIGH);
-  digitalWrite(KardIO[KardUnderTest][1], HIGH);
-  digitalWrite(KardIO[KardUnderTest][2], LOW);
-  digitalWrite(KardIO[KardUnderTest][3], LOW);
-  digitalWrite(KardIO[KardUnderTest][4], LOW);
-  digitalWrite(KardIO[KardUnderTest][5], LOW);
-  delay(250);              // wait for a second
-
-  digitalWrite(led1, HIGH);    // set the LED off
-  digitalWrite(led2, HIGH);   // set the LED on
-  digitalWrite(KardIO[KardUnderTest][0], HIGH);
-  digitalWrite(KardIO[KardUnderTest][1], HIGH);
-  digitalWrite(KardIO[KardUnderTest][2], HIGH);
-  digitalWrite(KardIO[KardUnderTest][3], LOW);
-  digitalWrite(KardIO[KardUnderTest][4], LOW);
-  digitalWrite(KardIO[KardUnderTest][5], LOW);
-  delay(250);              // wait for a second
-
-  digitalWrite(led1, HIGH);    // set the LED off
-  digitalWrite(led2, LOW);   // set the LED on
-  digitalWrite(KardIO[KardUnderTest][0], HIGH);
-  digitalWrite(KardIO[KardUnderTest][1], HIGH);
-  digitalWrite(KardIO[KardUnderTest][2], HIGH);
-  digitalWrite(KardIO[KardUnderTest][3], HIGH);
-  digitalWrite(KardIO[KardUnderTest][4], LOW);
-  digitalWrite(KardIO[KardUnderTest][5], LOW);
-  delay(250);              // wait for a second
-
-  digitalWrite(led1, LOW);    // set the LED off
-  digitalWrite(led2, LOW);   // set the LED on
-  digitalWrite(KardIO[KardUnderTest][0], LOW);
-  digitalWrite(KardIO[KardUnderTest][1], LOW);
-  digitalWrite(KardIO[KardUnderTest][2], LOW);
-  digitalWrite(KardIO[KardUnderTest][3], LOW);
-  digitalWrite(KardIO[KardUnderTest][4], HIGH);
-  digitalWrite(KardIO[KardUnderTest][5], HIGH);
   delay(250);              // wait for a second
 }
 
