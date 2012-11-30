@@ -53,12 +53,12 @@ void setup()
   Serial3.println("Serial3 - RS-485");
 }
 
-void PrintEE(uint8_t address)
+void PrintEE(us8 address)
 {
-  Wire.beginTransmission(address);  //0x53 quicK 0x50 Kard
+  Wire.beginTransmission((int)address);  //0x53 quicK 0x50 Kard
   Wire.send(0xFA);
   Wire.endTransmission();
-  Wire.requestFrom(address, 6);    // request 6 bytes from slave device #2
+  Wire.requestFrom((int)address, 6);    // request 6 bytes from slave device #2
   
   while(Wire.available())    // slave may send less than requested
   { 
@@ -160,43 +160,34 @@ void loop() {
           MySerial.print("OK");
           PrintCR();
       }
-      else if( tokpars.compare("QC.OUT?" ) ) {
-        tokpars.advanceTail(6);
-        if(tokpars.contains("?"))
-        {
-          MySerial.print(KardUnderTest,DEC);
-          PrintCR();
-        }
-        else
-        {
-          num1 = tokpars.to_e16();
-          KardUnderTest = num1.value;
-          MySerial.print(KardUnderTest,DEC);
-          MySerial.print("-");
-          if (KardUnderTest >= 0 && KardUnderTest <= 5)
-          {
-            for( i = 0; i < 6; i++ ) {
-              pinMode(KardIO[KardUnderTest][i], OUTPUT);
-            }
-            for( i = 0; i < 6; i++ ) {
-              digitalWrite(KardIO[KardUnderTest][i], HIGH);
-              delay(250);
-            }
-            for( i = 0; i < 6; i++ ) {
-              digitalWrite(KardIO[KardUnderTest][i], LOW);
-              delay(250);
-            }
-            for( i = 0; i < 6; i++ ) {
-              pinMode(KardIO[KardUnderTest][i], INPUT);
-            }
+      else if( tokpars.compare("QC.OUT" ) ) {
+        //tokpars.advanceTail(6); // use this (or something like this if you do NOT want a space) 
+        tokpars.nextToken(); // use this (or something like this if you want a space)
+        num1 = tokpars.to_e16();
+        KardUnderTest = num1.value;
+        MySerial.print(KardUnderTest,DEC);
+        MySerial.print("-");
+        if (KardUnderTest >= 0 && KardUnderTest <= 5) {
+          for( i = 0; i < 6; i++ ) {
+            pinMode(KardIO[KardUnderTest][i], OUTPUT);
           }
-          else
-          {
-            MySerial.print("N");
+          for( i = 0; i < 6; i++ ) {
+            digitalWrite(KardIO[KardUnderTest][i], HIGH);
+            delay(250);
           }
-          MySerial.print("OK");
-          PrintCR();
+          for( i = 0; i < 6; i++ ) {
+            digitalWrite(KardIO[KardUnderTest][i], LOW);
+            delay(250);
+          }
+          for( i = 0; i < 6; i++ ) {
+            pinMode(KardIO[KardUnderTest][i], INPUT);
+          }
         }
+        else {
+          MySerial.print("N");
+        }
+        MySerial.print("OK");
+        PrintCR();
       }
     }
   }
