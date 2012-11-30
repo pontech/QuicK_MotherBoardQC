@@ -1,5 +1,6 @@
+//#include "LTC1257CS8.h"
+//#include <SoftSPI.h>
 #include <Wire.h>
-
 #include "pic32lib/core.h"
 #include "TokenParser/TokenParser.h"
 
@@ -67,6 +68,12 @@ void PrintEE(us8 address)
     MySerial.print(".");
   }
   PrintCR();
+}
+
+char gc() {
+  while (MySerial.available() == 0)
+    ; // do nothing
+  return MySerial.read();
 }
 
 void loop() {
@@ -188,6 +195,32 @@ void loop() {
         }
         MySerial.print("OK");
         PrintCR();
+      }
+      else if( tokpars.compare("QC.DAC" ) ) {
+        us8 dac;
+        tokpars.nextToken(); // use this (or something like this if you want a space)
+        num1 = tokpars.to_e16();
+        KardUnderTest = num1.value;
+        MySerial.print("Kard-");
+        MySerial.print(KardUnderTest,DEC);
+        MySerial.print(" DAC Test");
+        PrintCR();
+        for( dac = 0; dac < 4; dac++ ) {
+          //ltc1257_begin(KardIO[KardUnderTest][dac]);
+          for( i = 0; i <= 10; i++ ) {
+            //ltc1257_write(KardIO[KardUnderTest][dac], i * (0xfff / 10));
+            MySerial.print("Kard-");
+            MySerial.print(KardUnderTest,DEC);
+            MySerial.print(",");
+            MySerial.print(dac,DEC);
+            MySerial.print(": ");
+            MySerial.print(i,DEC);
+            MySerial.print("V");
+            PrintCR();
+            gc();
+          }
+          //ltc1257_end(KardIO[KardUnderTest][dac]);
+        }
       }
     }
   }
