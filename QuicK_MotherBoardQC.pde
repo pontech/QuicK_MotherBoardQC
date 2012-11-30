@@ -1,3 +1,5 @@
+#include <Wire.h>
+
 #include "pic32lib/core.h"
 #include "TokenParser/TokenParser.h"
 
@@ -12,13 +14,14 @@
 // Max32 Pin Abstractions
 us8 led1 = 37;
 us8 led2 = 81;
-us8 KardIO[6][6] = {
+us8 KardIO[7][6] = {
                     { 68, 58, 62, 55, 82, 32 }, // Kard 0
                     { 57, 56, 63, 54, 83, 31 }, // Kard 1
                     { 86, 64,  5, 70, 84, 30 }, // Kard 2
                     { 22, 76,  9,  2, 35, 52 }, // Kard 3
                     { 23, 39,  8, 21, 34, 50 }, // Kard 4
                     { 78, 79, 10, 20, 33, 85 }, // Kard 5
+                    { 44, 44, 44, 44, 44, 44 }, // Kard Com
                    };
 
 us8 KardUnderTest = 3;
@@ -30,6 +33,8 @@ us8 buff[0x20];
 
 void setup()
 {
+  Wire.begin();
+
   pinMode(led1, OUTPUT);     
   pinMode(led2, OUTPUT);     
 
@@ -48,6 +53,21 @@ void setup()
   Serial3.println("Serial3 - RS-485");
 }
 
+void PrintEE(uint8_t address)
+{
+  Wire.beginTransmission(address);  //0x53 quicK 0x50 Kard
+  Wire.send(0xFA);
+  Wire.endTransmission();
+  Wire.requestFrom(address, 6);    // request 6 bytes from slave device #2
+  
+  while(Wire.available())    // slave may send less than requested
+  { 
+    char c = Wire.receive(); // receive a byte as character
+    MySerial.print(c,HEX);         // print the character
+    MySerial.print(".");
+  }
+  PrintCR();
+}
 
 void loop() {
   static us8 ctr;
@@ -90,6 +110,28 @@ void loop() {
         Serial3.write('A');
         MySerial.print("OK");
         PrintCR();
+      }
+      else if( tokpars.compare("QC.EE" ) ) {
+        MySerial.print("QuicK0:");
+        PrintEE(0x53);
+
+        for( KardUnderTest = 0; KardUnderTest < 7; KardUnderTest++ ) {
+          pinMode(KardIO[KardUnderTest][5], OUTPUT);
+          digitalWrite(KardIO[KardUnderTest][5],HIGH);
+        }
+        for( KardUnderTest = 0; KardUnderTest < 7; KardUnderTest++ ) {
+          MySerial.print("KARD-");
+          MySerial.print(KardUnderTest,DEC);
+          MySerial.print(":");
+          digitalWrite(KardIO[KardUnderTest][5],LOW);
+  
+          PrintEE(0x50);
+          digitalWrite(KardIO[KardUnderTest][5],HIGH);
+        }
+
+        for( KardUnderTest = 0; KardUnderTest < 7; KardUnderTest++ ) {
+          pinMode(KardIO[KardUnderTest][5], INPUT);
+        }
       }
       else if( tokpars.compare("QC.IN" ) ) {
           for( KardUnderTest = 0; KardUnderTest < 6; KardUnderTest++ ) {
