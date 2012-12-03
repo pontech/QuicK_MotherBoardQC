@@ -1,8 +1,8 @@
-//#include "LTC1257CS8.h"
-//#include <SoftSPI.h>
-#include <Wire.h>
 #include "pic32lib/core.h"
 #include "TokenParser/TokenParser.h"
+#include "LTC1257CS8.h"
+#include <SoftSPI.h>
+#include <Wire.h>
 
 #define WantNewLine // todo: 2 comment out before finalized
 
@@ -70,7 +70,7 @@ void PrintEE(us8 address)
   PrintCR();
 }
 
-char gc() {
+char waitforCR() {
   while (MySerial.available() == 0)
     ; // do nothing
   return MySerial.read();
@@ -196,6 +196,22 @@ void loop() {
         MySerial.print("OK");
         PrintCR();
       }
+      else if( tokpars.compare("QC.QAC" ) ) {
+        us8 dac;
+        tokpars.nextToken(); // use this (or something like this if you want a space)
+        num1 = tokpars.to_e16();
+        KardUnderTest = num1.value;
+        MySerial.print("Kard-");
+        MySerial.print(KardUnderTest,DEC);
+        MySerial.print(" DAC Test");
+        PrintCR();
+        for( dac = 0; dac < 4; dac++ ) {
+          ltc1257_begin(KardIO[KardUnderTest][dac]);
+          unsigned short int value;
+          value = (dac + 1) * (0xfff / 10);
+          ltc1257_write(KardIO[KardUnderTest][dac], value);
+        }
+      }
       else if( tokpars.compare("QC.DAC" ) ) {
         us8 dac;
         tokpars.nextToken(); // use this (or something like this if you want a space)
@@ -206,9 +222,11 @@ void loop() {
         MySerial.print(" DAC Test");
         PrintCR();
         for( dac = 0; dac < 4; dac++ ) {
-          //ltc1257_begin(KardIO[KardUnderTest][dac]);
+          ltc1257_begin(KardIO[KardUnderTest][dac]);
           for( i = 0; i <= 10; i++ ) {
-            //ltc1257_write(KardIO[KardUnderTest][dac], i * (0xfff / 10));
+            unsigned short int value;
+            value = i * (0xfff / 10);
+            ltc1257_write(KardIO[KardUnderTest][dac], value);
             MySerial.print("Kard-");
             MySerial.print(KardUnderTest,DEC);
             MySerial.print(",");
@@ -216,8 +234,11 @@ void loop() {
             MySerial.print(": ");
             MySerial.print(i,DEC);
             MySerial.print("V");
+            MySerial.print(": ");
+            MySerial.print(value,DEC);
+            MySerial.print("DAC");
             PrintCR();
-            gc();
+            waitforCR();
           }
           //ltc1257_end(KardIO[KardUnderTest][dac]);
         }
