@@ -105,6 +105,38 @@ void loop() {
         MySerial.print("no help");
         PrintCR();
       }
+      else if( tokpars.compare("RESET") ) {
+        MySerial.print("Close serial terminal, resetting board in...");
+        PrintCR();
+        us8 sec;
+        for( sec = 5; sec >= 1; sec-- ) {
+          MySerial.print(sec, DEC);
+          MySerial.print(" seconds...");
+          PrintCR();
+          delay(1000);
+        }
+        // Example 7-1 from Section 7 of PIC32 Family Manual
+
+        /* The following code illustrates a software Reset */
+        // assume interrupts are disabled
+        // assume the DMA controller is suspended
+        // assume the device is locked
+        
+        /* perform a system unlock sequence */
+      
+        // starting critical sequence
+        SYSKEY = 0x00000000;  //write invalid key to force lock
+        SYSKEY = 0xAA996655;  //write key1 to SYSKEY
+        SYSKEY = 0x556699AA;  //write key2 to SYSKEY
+        // OSCCON is now unlocked
+        /* set SWRST bit to arm reset */
+        RSWRSTSET = 1;
+        /* read RSWRST register to trigger reset */
+        unsigned int dummy;
+        dummy = RSWRST;
+        /* prevent any unwanted code execution until reset occurs*/
+        while(1);
+      }
       else if( tokpars.compare("V?",'|') ) {
         MySerial.print("QuicK-240 Motherboard Quality Control Sofwtare Version x.x");
         PrintCR();
