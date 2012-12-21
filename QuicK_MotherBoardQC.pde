@@ -13,8 +13,9 @@
 // Serail3 485 rail
 
 // Max32 Pin Abstractions
-us8 led1 = 37;
-us8 led2 = 81;
+us8 led1 = PIN_LED1;
+us8 led2 = PIN_LED2;
+
 us8 KardIO[7][6] = {
                     { 68, 58, 62, 55, 82, 32 }, // Kard 0
                     { 57, 56, 63, 54, 83, 31 }, // Kard 1
@@ -217,6 +218,43 @@ void loop() {
           for( i = 0; i < 6; i++ ) {
             digitalWrite(KardIO[KardUnderTest][i], LOW);
             delay(250);
+          }
+          for( i = 0; i < 6; i++ ) {
+            pinMode(KardIO[KardUnderTest][i], INPUT);
+          }
+        }
+        else {
+          MySerial.print("N");
+        }
+        MySerial.print("OK");
+        PrintCR();
+      }
+      else if( tokpars.compare("QC.STEP" ) ) {
+        us32 pos;
+        //tokpars.advanceTail(6); // use this (or something like this if you do NOT want a space) 
+        tokpars.nextToken(); // use this (or something like this if you want a space)
+        num1 = tokpars.to_e16();
+        tokpars.nextToken(); // use this (or something like this if you want a space)
+        num2 = tokpars.to_e16();
+        KardUnderTest = num1.value;
+        MySerial.print(KardUnderTest,DEC);
+        MySerial.print("-");
+        if (KardUnderTest >= 0 && KardUnderTest <= 5) {
+          pinMode(KardIO[KardUnderTest][0], OUTPUT);
+          pinMode(KardIO[KardUnderTest][1], OUTPUT);
+          digitalWrite(KardIO[KardUnderTest][1], HIGH);
+          for( pos = 0; pos < num2.value; pos++ ) {
+            digitalWrite(KardIO[KardUnderTest][0], HIGH);
+            delayMicroseconds(10);
+            digitalWrite(KardIO[KardUnderTest][0], LOW);
+            delayMicroseconds(250);
+          }
+          digitalWrite(KardIO[KardUnderTest][1], LOW);
+          for( pos = 0; pos < num2.value; pos++ ) {
+            digitalWrite(KardIO[KardUnderTest][0], HIGH);
+            delayMicroseconds(10);
+            digitalWrite(KardIO[KardUnderTest][0], LOW);
+            delayMicroseconds(250);
           }
           for( i = 0; i < 6; i++ ) {
             pinMode(KardIO[KardUnderTest][i], INPUT);
