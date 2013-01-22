@@ -60,7 +60,8 @@ void setup()
 void PrintEE(us8 address)
 {
   Wire.beginTransmission((int)address);  //0x53 quicK 0x50 Kard
-  Wire.send(0xFA);
+  //Wire.send(0xFA);
+  Wire.send(0x00);
   Wire.endTransmission();
   Wire.requestFrom((int)address, 6);    // request 6 bytes from slave device #2
   
@@ -72,6 +73,9 @@ void PrintEE(us8 address)
   }
   PrintCR();
 }
+
+
+
 
 char waitforCR() {
   while (MySerial.available() == 0)
@@ -152,6 +156,29 @@ void loop() {
         Serial3.write('A');
         MySerial.print("OK");
         PrintCR();
+      }
+      else if ( tokpars.compare("EWRITE" )){
+          for( KardUnderTest = 0; KardUnderTest < 7; KardUnderTest++ ) {
+            pinMode(KardIO[KardUnderTest][5], OUTPUT);
+            digitalWrite(KardIO[KardUnderTest][5],HIGH);
+          }
+          KardUnderTest = 0;
+          digitalWrite(KardIO[KardUnderTest][5],LOW);
+  
+          Wire.beginTransmission(0x50);  //0x53 quicK 0x50 Kard
+          Wire.send(0x00);
+          Wire.send(0x00);
+          Wire.send(0x01);
+          Wire.send(0x02);
+          Wire.send(0x03);
+          Wire.send(0x04);
+          Wire.send(0x05);
+          Wire.send(0x06);
+          Wire.endTransmission();
+
+          digitalWrite(KardIO[KardUnderTest][5],HIGH);
+          MySerial.print("OK");
+          PrintCR();
       }
       else if( tokpars.compare("QC.EE" ) ) {
         MySerial.print("QuicK0:");
