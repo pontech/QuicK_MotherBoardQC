@@ -35,6 +35,8 @@ us8 buff[0x20];
 
 void setup()
 {
+  // Clear RCON bits so next reset provide meaningful information
+  RCON = 0x00000000;
   Wire.begin();
 
   pinMode(led1, OUTPUT);     
