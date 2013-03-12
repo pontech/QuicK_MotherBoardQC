@@ -271,7 +271,11 @@ void loop() {
         if (KardUnderTest >= 0 && KardUnderTest <= 5) {
           pinMode(KardIO[KardUnderTest][0], OUTPUT);
           pinMode(KardIO[KardUnderTest][1], OUTPUT);
+          pinMode(KardIO[KardUnderTest][2], OUTPUT);
+          pinMode(KardIO[KardUnderTest][3], OUTPUT);
           digitalWrite(KardIO[KardUnderTest][1], HIGH);
+          digitalWrite(KardIO[KardUnderTest][2], LOW);
+          digitalWrite(KardIO[KardUnderTest][3], HIGH);
           for( pos = 0; pos < num2.value; pos++ ) {
             digitalWrite(KardIO[KardUnderTest][0], HIGH);
             delayMicroseconds(10);
