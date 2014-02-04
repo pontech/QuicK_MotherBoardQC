@@ -13,18 +13,32 @@
 // Serail3 485 rail
 
 // Max32 Pin Abstractions
-us8 led1 = PIN_LED1;
-us8 led2 = PIN_LED2;
+us8 led1 = 37;
+us8 led2 = 81;
 
 us8 KardIO[7][6] = {
-                    { 68, 58, 62, 55, 82, 32 }, // Kard 0
-                    { 57, 56, 63, 54, 83, 31 }, // Kard 1
-                    { 86, 64,  5, 70, 84, 30 }, // Kard 2
-                    { 22, 76,  9,  2, 35, 52 }, // Kard 3
-                    { 23, 39,  8, 21, 34, 50 }, // Kard 4
-                    { 78, 79, 10, 20, 33, 85 }, // Kard 5
-                    { 44, 44, 44, 44, 44, 44 }, // Kard Com
-                   };
+  { 
+    68, 58, 62, 55, 82, 32   }
+  , // Kard 0
+  { 
+    57, 56, 63, 54, 83, 31   }
+  , // Kard 1
+  { 
+    86, 64,  5, 70, 84, 30   }
+  , // Kard 2
+  { 
+    22, 76,  9,  2, 35, 52   }
+  , // Kard 3
+  { 
+    23, 39,  8, 21, 34, 50   }
+  , // Kard 4
+  { 
+    78, 79, 10, 20, 33, 85   }
+  , // Kard 5
+  { 
+    44, 44, 44, 44, 44, 44   }
+  , // Kard Com
+};
 
 us8 KardUnderTest = 3;
 // Kard 2 does not light one LED on KardDrive
@@ -64,7 +78,7 @@ void PrintEE(us8 address)
   Wire.send(0x00);
   Wire.endTransmission();
   Wire.requestFrom((int)address, 6);    // request 6 bytes from slave device #2
-  
+
   while(Wire.available())    // slave may send less than requested
   { 
     char c = Wire.receive(); // receive a byte as character
@@ -87,6 +101,7 @@ void loop() {
   static us8 ctr;
   us8 ch;
   us8 i;
+  us8 j;
   e16 num1;//temporary values to parse into
   e16 num2;
   e32 num3;
@@ -128,9 +143,9 @@ void loop() {
         // assume interrupts are disabled
         // assume the DMA controller is suspended
         // assume the device is locked
-        
+
         /* perform a system unlock sequence */
-      
+
         // starting critical sequence
         SYSKEY = 0x00000000;  //write invalid key to force lock
         SYSKEY = 0xAA996655;  //write key1 to SYSKEY
@@ -158,13 +173,15 @@ void loop() {
         PrintCR();
       }
       else if ( tokpars.compare("EWRITE" )){
-          for( KardUnderTest = 0; KardUnderTest < 7; KardUnderTest++ ) {
-            pinMode(KardIO[KardUnderTest][5], OUTPUT);
-            digitalWrite(KardIO[KardUnderTest][5],HIGH);
-          }
-          KardUnderTest = 0;
-          digitalWrite(KardIO[KardUnderTest][5],LOW);
-  
+        for( KardUnderTest = 0; KardUnderTest < 7; KardUnderTest++ ) {
+          pinMode(KardIO[KardUnderTest][5], OUTPUT);
+          digitalWrite(KardIO[KardUnderTest][5],HIGH);
+
+        }
+
+        for( i = 0; i < 6; i++ )
+        {
+          digitalWrite(KardIO[i][5],LOW);
           Wire.beginTransmission(0x50);  //0x53 quicK 0x50 Kard
           Wire.send(0x00);
           Wire.send(0x00);
@@ -176,9 +193,38 @@ void loop() {
           Wire.send(0x06);
           Wire.endTransmission();
 
+          digitalWrite(KardIO[i][5],HIGH);
+        }
+
+        MySerial.print("OK");
+        PrintCR();
+      }
+      else if ( tokpars.compare("ERASE" )){
+        for( KardUnderTest = 0; KardUnderTest < 7; KardUnderTest++ ) {
+          pinMode(KardIO[KardUnderTest][5], OUTPUT);
           digitalWrite(KardIO[KardUnderTest][5],HIGH);
-          MySerial.print("OK");
-          PrintCR();
+
+        }
+
+        for( i = 0; i < 6; i++ )
+        {
+          digitalWrite(KardIO[i][5],LOW);
+          Wire.beginTransmission(0x50);  //0x53 quicK 0x50 Kard
+          Wire.send(0x00);
+          Wire.send(0x00);
+          Wire.send(0x00);
+          Wire.send(0x00);
+          Wire.send(0x00);
+          Wire.send(0x00);
+          Wire.send(0x00);
+          Wire.send(0x00);
+          Wire.endTransmission();
+
+          digitalWrite(KardIO[i][5],HIGH);
+        }
+
+        MySerial.print("ERASED");
+        PrintCR();
       }
       else if( tokpars.compare("QC.EE" ) ) {
         MySerial.print("QuicK0:");
@@ -193,7 +239,7 @@ void loop() {
           MySerial.print(KardUnderTest,DEC);
           MySerial.print(":");
           digitalWrite(KardIO[KardUnderTest][5],LOW);
-  
+
           PrintEE(0x50);
           digitalWrite(KardIO[KardUnderTest][5],HIGH);
         }
@@ -203,31 +249,31 @@ void loop() {
         }
       }
       else if( tokpars.compare("QC.IN" ) ) {
-          for( KardUnderTest = 0; KardUnderTest < 6; KardUnderTest++ ) {
-            for( i = 0; i < 6; i++ ) {
-              pinMode(KardIO[KardUnderTest][i], INPUT);
-            }
-          } 
-          while (MySerial.available() == 0)
-          {
-            for( KardUnderTest = 0; KardUnderTest < 6; KardUnderTest++ ) {
-              MySerial.print("K");
-              MySerial.print(KardUnderTest,DEC);
-              MySerial.print(" ");
-              for( i = 0; i < 6; i++ ) {
-                MySerial.print(digitalRead(KardIO[KardUnderTest][i]));
-                if( i == 3 ) {
-                  MySerial.print(" ");
-                }
-              }
-              MySerial.print(" ");
-            } 
-            PrintCR();
-            delay(50);
+        for( KardUnderTest = 0; KardUnderTest < 6; KardUnderTest++ ) {
+          for( i = 0; i < 6; i++ ) {
+            pinMode(KardIO[KardUnderTest][i], INPUT);
           }
-          ch = MySerial.read();
-          MySerial.print("OK");
+        } 
+        while (MySerial.available() == 0)
+        {
+          for( KardUnderTest = 0; KardUnderTest < 6; KardUnderTest++ ) {
+            MySerial.print("K");
+            MySerial.print(KardUnderTest,DEC);
+            MySerial.print(" ");
+            for( i = 0; i < 6; i++ ) {
+              MySerial.print(digitalRead(KardIO[KardUnderTest][i]));
+              if( i == 3 ) {
+                MySerial.print(" ");
+              }
+            }
+            MySerial.print(" ");
+          } 
           PrintCR();
+          delay(50);
+        }
+        ch = MySerial.read();
+        MySerial.print("OK");
+        PrintCR();
       }
       else if( tokpars.compare("QC.OUT" ) ) {
         //tokpars.advanceTail(6); // use this (or something like this if you do NOT want a space) 
@@ -236,7 +282,49 @@ void loop() {
         KardUnderTest = num1.value;
         MySerial.print(KardUnderTest,DEC);
         MySerial.print("-");
-        if (KardUnderTest >= 0 && KardUnderTest <= 5) {
+        if (KardUnderTest == 00) 
+        {
+          for( i = 0; i < 6; i++ )
+          {
+            for( j = 0; j < 6; j++ ) 
+            {
+              pinMode(KardIO[i][j], OUTPUT);
+              digitalWrite(KardIO[i][j], LOW);
+            }
+
+          }
+
+          for( i = 0; i < 6; i++ ) 
+          {
+            for( j = 0; j < 6; j++ ) 
+            {
+              digitalWrite(KardIO[i][j], HIGH);
+              delay(250);
+              digitalWrite(KardIO[i][j], LOW);
+            }
+
+          }
+
+          for( i = 0; i < 6; i++ ) 
+          {
+            for( j = 0; j < 6; j++ ) 
+            {
+              digitalWrite(KardIO[i][j], HIGH);
+            }
+            delay(250);
+          }
+
+          for( i = 0; i < 6; i++ ) 
+          {
+            for( j = 0; j < 6; j++ ) 
+            {
+              digitalWrite(KardIO[i][j], LOW);
+            }
+            delay(250);
+          }
+        }
+        
+        else if (KardUnderTest >= 0 && KardUnderTest <= 5) {
           for( i = 0; i < 6; i++ ) {
             pinMode(KardIO[KardUnderTest][i], OUTPUT);
           }
@@ -391,10 +479,11 @@ void loop() {
 }
 
 void PrintCR() {
-  #ifdef WantNewLine
+#ifdef WantNewLine
   MySerial.print("\r\n");
-  #else
+#else
   MySerial.print("\r");
-  #endif
+#endif
 }
+
 
