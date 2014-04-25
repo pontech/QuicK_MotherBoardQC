@@ -17,28 +17,14 @@ us8 led1 = 37;
 us8 led2 = 81;
 
 us8 KardIO[7][6] = {
-  { 
-    68, 58, 62, 55, 82, 32   }
-  , // Kard 0
-  { 
-    57, 56, 63, 54, 83, 31   }
-  , // Kard 1
-  { 
-    86, 64,  5, 70, 84, 30   }
-  , // Kard 2
-  { 
-    22, 76,  9,  2, 35, 52   }
-  , // Kard 3
-  { 
-    23, 39,  8, 21, 34, 50   }
-  , // Kard 4
-  { 
-    78, 79, 10, 20, 33, 85   }
-  , // Kard 5
-  { 
-    44, 44, 44, 44, 44, 44   }
-  , // Kard Com
-};
+                    { 68, 58, 62, 55, 82, 32 }, // Kard 0
+                    { 57, 56, 63, 54, 83, 31 }, // Kard 1
+                    { 86, 64,  5, 70, 84, 30 }, // Kard 2
+                    { 22, 76,  9,  2, 35, 52 }, // Kard 3
+                    { 23, 39,  8, 21, 34, 50 }, // Kard 4
+                    { 78, 79, 10, 20, 33, 85 }, // Kard 5
+                    { 44, 44, 44, 44, 44, 44 }, // Kard Com
+                   };
 
 us8 KardUnderTest = 3;
 // Kard 2 does not light one LED on KardDrive
@@ -62,6 +48,12 @@ void setup()
   Serial1.begin(115200);
   Serial2.begin(115200);
   Serial3.begin(115200);
+  //set all eeprom chip selects to low
+  us8 i;
+  for( i = 0; i < 7; i++ ) {
+    pinMode(KardIO[i][5], OUTPUT);
+    digitalWrite(KardIO[i][5],LOW);
+  }
 
   delay(5000);
   Serial.println("Serial - USB Open");
@@ -88,7 +80,33 @@ void PrintEE(us8 address)
   PrintCR();
 }
 
+us8 EEPROM_Read(us8 cs, us8 ADDR)
+{
+  us8 c;
+  digitalWrite(cs,HIGH);
+  Wire.beginTransmission(0x51);//0x53 quicK 0x51 Kard
+  Wire.send(ADDR);
+  Wire.endTransmission();
+  Wire.requestFrom(0x51, 1);   // request 1 bytes from slave device
+                               // can be up to limit of memory
+  while(Wire.available())    // slave may send less than requested
+  { 
+    c = Wire.receive(); // receive a byte as character
+  }
+  digitalWrite(cs,LOW);
+  return c;
+}
 
+void EEPROM_Write(us8 cs, us8 ADDR, us8 val)
+{
+  digitalWrite(cs,HIGH);
+  Wire.beginTransmission(0x51);//0x53 quicK 0x51 Kard
+  Wire.send(ADDR);
+  Wire.send(val);//up to 8 in sequence
+  Wire.endTransmission();
+  delay(10); //delay while writing
+  digitalWrite(cs,LOW);
+}
 
 
 char waitforCR() {
@@ -170,6 +188,30 @@ void loop() {
         Serial2.write('A');
         Serial3.write('A');
         MySerial.print("OK");
+        PrintCR();
+      }
+      else if ( tokpars.compare("EEWRITE?" )){
+        tokpars.nextToken();
+        num1 = tokpars.to_e16();
+        us8 kard = num1.value;
+        tokpars.nextToken();
+        num1 = tokpars.to_e16();
+        us8 address = num1.value;
+        tokpars.nextToken();
+        num1 = tokpars.to_e16();
+        us8 value = num1.value;
+        EEPROM_Write( KardIO[kard][5], address, value);
+        MySerial.print("OK");
+        PrintCR();
+      }
+      else if ( tokpars.compare("EEREAD?" )){
+        tokpars.nextToken();
+        num1 = tokpars.to_e16();
+        us8 kard = num1.value;
+        tokpars.nextToken();
+        num1 = tokpars.to_e16();
+        us8 address = num1.value;
+        MySerial.print(EEPROM_Read( KardIO[kard][5], address),DEC);
         PrintCR();
       }
       else if ( tokpars.compare("EWRITE" )){
