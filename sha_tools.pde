@@ -1,15 +1,17 @@
 void printHash(uint8_t* hash) {
-  int i;
-  for (i=0; i<20; i++) {
-    MySerial.print("0123456789abcdef"[hash[i]>>4]);
-    MySerial.print("0123456789abcdef"[hash[i]&0xf]);
-  }
+  MySerial.print(HashToString(hash,20));
 }
 
-void printHash(uint8_t* hash, uint8_t* bytes) {
+void printHash(uint8_t* hash, uint8_t bytes) {
+  MySerial.print(HashToString(hash,bytes));
+}
+
+String HashToString(uint8_t* hash, uint8_t bytes) {
+  String hash_string = "";
   int i;
   for (i=0; i<bytes; i++) {
-    MySerial.print("0123456789abcdef"[hash[i]>>4]);
-    MySerial.print("0123456789abcdef"[hash[i]&0xf]);
+    hash_string += String("0123456789abcdef"[hash[i]>>4]);
+    hash_string += String("0123456789abcdef"[hash[i]&0xf]);
   }
+  return hash_string;
 }

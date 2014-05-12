@@ -18,6 +18,13 @@ us8 led1 = 37;
 us8 led2 = 81;
 #line 20
 
+String kard_json[] = {
+  "{\"org\":\"pontech.com\",\"cn\":\"ISO Common Cathode\",\"rev\":\"D\",\"io\":0x1F}",
+  "{\"org\":\"pontech.com\",\"cn\":\"ISO Common Anode\",\"rev\":\"D\",\"io\":0x1F}",
+  "{\"org\":\"pontech.com\",\"cn\":\"Drive Source\",\"rev\":\"C\",\"io\":0x00}",
+  "{\"org\":\"pontech.com\",\"cn\":\"Drive Sink\",\"rev\":\"C\",\"io\":0x00}"
+};
+
 us8 KardIO[7][6] = {
                     { 68, 58, 62, 55, 82, 32 }, // Kard 0
                     { 57, 56, 63, 54, 83, 31 }, // Kard 1
@@ -101,6 +108,12 @@ us8 EEPROM_Read(us8 cs, us8 ADDR)
 
 void EEPROM_Write(us8 cs, us8 ADDR, us8 val)
 {
+//  MySerial.print(ADDR, HEX);
+//  MySerial.print(":[");
+//  MySerial.print(val, HEX);
+//  MySerial.print("]");
+//  MySerial.write(val);
+//  PrintCR();
   digitalWrite(cs,HIGH);
   Wire.beginTransmission(0x51);//0x53 quicK 0x51 Kard
   Wire.send(ADDR);
@@ -108,6 +121,21 @@ void EEPROM_Write(us8 cs, us8 ADDR, us8 val)
   Wire.endTransmission();
   delay(10); //delay while writing
   digitalWrite(cs,LOW);
+}
+
+void EEPROM_Write(us8 cs, us8 ADDR, String str)
+{
+  us16 len = str.length();
+  for(int i = 0; i < len; i++) {
+     EEPROM_Write(cs, ADDR + i, str[i]);
+  }
+}
+
+void EEPROM_Write_Pad(us8 cs, us16 address, us16 last_address, us8 pad)
+{
+  for(int i = address; i <= last_address; i++) {
+     EEPROM_Write(cs, i, pad);
+  }
 }
 
 
@@ -150,26 +178,56 @@ void loop() {
         MySerial.print("no help");
         PrintCR();
       }
-      else if( tokpars.compare("JSON") ) {
-        String json[] = {
-          "{\"org\":\"quickkard.com\",\"cn\":\"ISO Common Cathode\",\"rev\":\"D\",\"io\":0x1F}",
-          "{\"org\":\"quickkard.com\",\"cn\":\"ISO Common Anode\",\"rev\":\"D\",\"io\":0x1F}",
-          "{\"org\":\"quickkard.com\",\"cn\":\"Drive Source\",\"rev\":\"C\",\"io\":0x00}",
-          "{\"org\":\"quickkard.com\",\"cn\":\"Drive Sink\",\"rev\":\"C\",\"io\":0x00}"
-        };
-        
-        String json_ISOCC = "{\"org\":\"quickkard.com\",\"cn\":\"ISO Common Cathode\",\"rev\":\"D\",\"io\":0x1F}";
-        String json_ISOCA = "{\"org\":\"quickkard.com\",\"cn\":\"ISO Common Anode\",\"rev\":\"D\",\"io\":0x1F}";
-        String json_DriveSrc = "{\"org\":\"quickkard.com\",\"cn\":\"Drive Source\",\"rev\":\"C\",\"io\":0x00}";
-        String json_DriveSnk = "{\"org\":\"quickkard.com\",\"cn\":\"Drive Sink\",\"rev\":\"C\",\"io\":0x00}";
+      else if( tokpars.compare("JSON.READ") ) {
+        us8 kard = 0;
+        us16 address = num1.value;
+        for( kard = 0; kard < 7; kard ++ ) {
+          MySerial.print("kard");
+          MySerial.print(kard,HEX);
+          MySerial.print(":");
+          PrintCR();
+          for( address = 0; address < 256; address++ ) {
+            us8 c = EEPROM_Read( KardIO[kard][5], address);
+            if( c ==  ) ; // do nothing
+            else if( c < 128 ) MySerial.write(c);
+            else {
+              MySerial.print("[");
+              MySerial.print(c,HEX);
+              MySerial.print("]");
+            }
+          }
+          PrintCR();
+        }
+      }
+      else if( tokpars.compare("JSON.WRITE?") ) {
+        tokpars.nextToken();
+        num1 = tokpars.to_e16();
+        us8 kard = num1.value;
+        tokpars.nextToken();
+        num1 = tokpars.to_e16();
+        us8 json = num1.value;
 
+        MySerial.print("Kard");
+        MySerial.print(kard, DEC);
+        MySerial.print(":");
+        Sha1.init();
+        Sha1.print(kard_json[json]);
+
+        EEPROM_Write(KardIO[kard][5], 0, HashToString(Sha1.result(), 4));
+        EEPROM_Write(KardIO[kard][5], 8, kard_json[json]);
+        EEPROM_Write_Pad(KardIO[kard][5], 8 + kard_json[json].length(), 208, 0);
+        EEPROM_Write_Pad(KardIO[kard][5], 209, 255, 255);
+        
+        printHash(Sha1.result(), 4);
+        MySerial.print(kard_json[json]);
+        PrintCR();
+      }
+      else if( tokpars.compare("JSON") ) {
         for( i = 0; i < 4; i++ ) {
           Sha1.init();
-          Sha1.print(json[i]);
+          Sha1.print(kard_json[i]);
           printHash(Sha1.result(), 4);
-          
-          MySerial.print(" ");
-          MySerial.print(json[i]);
+          MySerial.print(kard_json[i]);
           PrintCR();
         }
         PrintCR();
