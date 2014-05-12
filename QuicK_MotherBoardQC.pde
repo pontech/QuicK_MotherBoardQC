@@ -16,6 +16,7 @@
 // Max32 Pin Abstractions
 us8 led1 = 37;
 us8 led2 = 81;
+#line 20
 
 us8 KardIO[7][6] = {
                     { 68, 58, 62, 55, 82, 32 }, // Kard 0
@@ -150,16 +151,27 @@ void loop() {
         PrintCR();
       }
       else if( tokpars.compare("JSON") ) {
-        String json = "{\"org\":\"Prolinear/Pontech Inc.\",\"cn\":\"Drive Kard\",\"rev\":\"A\", ...}";
-        Sha1.init();
-        Sha1.print(json);
+        String json[] = {
+          "{\"org\":\"quickkard.com\",\"cn\":\"ISO Common Cathode\",\"rev\":\"D\",\"io\":0x1F}",
+          "{\"org\":\"quickkard.com\",\"cn\":\"ISO Common Anode\",\"rev\":\"D\",\"io\":0x1F}",
+          "{\"org\":\"quickkard.com\",\"cn\":\"Drive Source\",\"rev\":\"C\",\"io\":0x00}",
+          "{\"org\":\"quickkard.com\",\"cn\":\"Drive Sink\",\"rev\":\"C\",\"io\":0x00}"
+        };
         
-        MySerial.print("SHA1 for ");
-        MySerial.print(json);
-        PrintCR();
-        printHash(Sha1.result());
-        PrintCR();
+        String json_ISOCC = "{\"org\":\"quickkard.com\",\"cn\":\"ISO Common Cathode\",\"rev\":\"D\",\"io\":0x1F}";
+        String json_ISOCA = "{\"org\":\"quickkard.com\",\"cn\":\"ISO Common Anode\",\"rev\":\"D\",\"io\":0x1F}";
+        String json_DriveSrc = "{\"org\":\"quickkard.com\",\"cn\":\"Drive Source\",\"rev\":\"C\",\"io\":0x00}";
+        String json_DriveSnk = "{\"org\":\"quickkard.com\",\"cn\":\"Drive Sink\",\"rev\":\"C\",\"io\":0x00}";
 
+        for( i = 0; i < 4; i++ ) {
+          Sha1.init();
+          Sha1.print(json[i]);
+          printHash(Sha1.result(), 4);
+          
+          MySerial.print(" ");
+          MySerial.print(json[i]);
+          PrintCR();
+        }
         PrintCR();
       }
       else if( tokpars.compare("RESET") ) {

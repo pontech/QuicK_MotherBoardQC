@@ -6,4 +6,10 @@ void printHash(uint8_t* hash) {
   }
 }
 
-
+void printHash(uint8_t* hash, uint8_t* bytes) {
+  int i;
+  for (i=0; i<bytes; i++) {
+    MySerial.print("0123456789abcdef"[hash[i]>>4]);
+    MySerial.print("0123456789abcdef"[hash[i]&0xf]);
+  }
+}
