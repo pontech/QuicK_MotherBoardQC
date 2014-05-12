@@ -89,8 +89,9 @@ void PrintEE(us8 address)
   PrintCR();
 }
 
-us8 EEPROM_Read(us8 cs, us8 ADDR)
+us8 EEPROM_Read(us8 cs, us8 ADDR, us16 *bytes_read)
 {
+  *bytes_read = 0;
   us8 c;
   digitalWrite(cs,HIGH);
   Wire.beginTransmission(0x51);//0x53 quicK 0x51 Kard
@@ -101,6 +102,7 @@ us8 EEPROM_Read(us8 cs, us8 ADDR)
   while(Wire.available())    // slave may send less than requested
   { 
     c = Wire.receive(); // receive a byte as character
+    (*bytes_read)++;
   }
   digitalWrite(cs,LOW);
   return c;
@@ -138,6 +140,23 @@ void EEPROM_Write_Pad(us8 cs, us16 address, us16 last_address, us8 pad)
   }
 }
 
+void EEPROM_Write_JSON(us8 kard, us16 json)
+{
+  MySerial.print("Kard");
+  MySerial.print(kard, DEC);
+  MySerial.print(":");
+  Sha1.init();
+  Sha1.print(kard_json[json]);
+  
+  EEPROM_Write(KardIO[kard][5], 0, HashToString(Sha1.result(), 4));
+  EEPROM_Write(KardIO[kard][5], 8, kard_json[json]);
+  EEPROM_Write_Pad(KardIO[kard][5], 8 + kard_json[json].length(), 208, 0);
+  EEPROM_Write_Pad(KardIO[kard][5], 209, 255, 255);
+  
+  printHash(Sha1.result(), 4);
+  MySerial.print(kard_json[json]);
+  PrintCR();
+}
 
 char waitforCR() {
   while (MySerial.available() == 0)
@@ -185,10 +204,15 @@ void loop() {
           MySerial.print("kard");
           MySerial.print(kard,HEX);
           MySerial.print(":");
-          PrintCR();
-          for( address = 0; address < 256; address++ ) {
-            us8 c = EEPROM_Read( KardIO[kard][5], address);
-            if( c ==  ) ; // do nothing
+          us16 bytes_read;
+          for( address = 0; address < 209; address++ ) {
+            us8 c = EEPROM_Read( KardIO[kard][5], address, &bytes_read);
+            if( bytes_read == 0 )
+            {
+              MySerial.print("EEPROM Not Found");
+              break;
+            }
+            if( c == 0 ) ; // do nothing
             else if( c < 128 ) MySerial.write(c);
             else {
               MySerial.print("[");
@@ -200,27 +224,16 @@ void loop() {
         }
       }
       else if( tokpars.compare("JSON.WRITE?") ) {
-        tokpars.nextToken();
-        num1 = tokpars.to_e16();
-        us8 kard = num1.value;
+        //tokpars.nextToken();
+        //num1 = tokpars.to_e16();
+        //us8 kard = num1.value;
         tokpars.nextToken();
         num1 = tokpars.to_e16();
         us8 json = num1.value;
 
-        MySerial.print("Kard");
-        MySerial.print(kard, DEC);
-        MySerial.print(":");
-        Sha1.init();
-        Sha1.print(kard_json[json]);
-
-        EEPROM_Write(KardIO[kard][5], 0, HashToString(Sha1.result(), 4));
-        EEPROM_Write(KardIO[kard][5], 8, kard_json[json]);
-        EEPROM_Write_Pad(KardIO[kard][5], 8 + kard_json[json].length(), 208, 0);
-        EEPROM_Write_Pad(KardIO[kard][5], 209, 255, 255);
-        
-        printHash(Sha1.result(), 4);
-        MySerial.print(kard_json[json]);
-        PrintCR();
+        for(us8 kard = 0; kard < 7; kard++) {
+          EEPROM_Write_JSON(kard, json);
+        } 
       }
       else if( tokpars.compare("JSON") ) {
         for( i = 0; i < 4; i++ ) {
@@ -298,7 +311,8 @@ void loop() {
         tokpars.nextToken();
         num1 = tokpars.to_e16();
         us8 address = num1.value;
-        MySerial.print(EEPROM_Read( KardIO[kard][5], address),DEC);
+        us16 bytes_read;
+        MySerial.print(EEPROM_Read( KardIO[kard][5], address,&bytes_read),DEC);
         PrintCR();
       }
       else if ( tokpars.compare("EWRITE" )){
