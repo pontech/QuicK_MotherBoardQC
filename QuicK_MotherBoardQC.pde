@@ -1,6 +1,7 @@
 #include "pic32lib/core.h"
 #include "TokenParser/TokenParser.h"
 #include "LTC1257CS8.h"
+#include "sha1.h"
 #include <SoftSPI.h>
 #include <Wire.h>
 
@@ -142,7 +143,23 @@ void loop() {
       ctr = 0;
 
       if( tokpars.compare("?",'|' ) || tokpars.compare("HELP" ) ) {
+        //MySerial.print("RESET"); PrintCR();
+        //MySerial.print("LOOPBACK"); PrintCR();
+        //MySerial.print(""); PrintCR();
         MySerial.print("no help");
+        PrintCR();
+      }
+      else if( tokpars.compare("JSON") ) {
+        String json = "{\"org\":\"Prolinear/Pontech Inc.\",\"cn\":\"Drive Kard\",\"rev\":\"A\", ...}";
+        Sha1.init();
+        Sha1.print(json);
+        
+        MySerial.print("SHA1 for ");
+        MySerial.print(json);
+        PrintCR();
+        printHash(Sha1.result());
+        PrintCR();
+
         PrintCR();
       }
       else if( tokpars.compare("RESET") ) {
