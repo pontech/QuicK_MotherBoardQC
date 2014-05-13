@@ -148,12 +148,13 @@ void EEPROM_Write_JSON(us8 kard, us16 json)
   Sha1.init();
   Sha1.print(kard_json[json]);
   
-  EEPROM_Write(KardIO[kard][5], 0, HashToString(Sha1.result(), 4));
+  String sha_result = HashToString(Sha1.result(), 4);
+  EEPROM_Write(KardIO[kard][5], 0, sha_result);
   EEPROM_Write(KardIO[kard][5], 8, kard_json[json]);
   EEPROM_Write_Pad(KardIO[kard][5], 8 + kard_json[json].length(), 208, 0);
   EEPROM_Write_Pad(KardIO[kard][5], 209, 255, 255);
   
-  printHash(Sha1.result(), 4);
+  MySerial.print(sha_result);
   MySerial.print(kard_json[json]);
   PrintCR();
 }
