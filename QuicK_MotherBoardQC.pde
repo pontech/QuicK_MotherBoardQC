@@ -18,11 +18,17 @@ us8 led1 = 37;
 us8 led2 = 81;
 #line 20
 
+const us8 KARD_JSON_MAX = 8;
+
 String kard_json[] = {
-  "{\"org\":\"pontech.com\",\"cn\":\"ISO Common Cathode\",\"rev\":\"D\",\"io\":0x1F}",
-  "{\"org\":\"pontech.com\",\"cn\":\"ISO Common Anode\",\"rev\":\"D\",\"io\":0x1F}",
-  "{\"org\":\"pontech.com\",\"cn\":\"Drive Source\",\"rev\":\"C\",\"io\":0x00}",
-  "{\"org\":\"pontech.com\",\"cn\":\"Drive Sink\",\"rev\":\"C\",\"io\":0x00}"
+  "{\"org\":\"pontech.com\",\"cn\":\"ISO Common Cathode\",\"rev\":\"D\",\"io\":31}",
+  "{\"org\":\"pontech.com\",\"cn\":\"ISO Common Anode\",\"rev\":\"D\",\"io\":31}",
+  "{\"org\":\"pontech.com\",\"cn\":\"Drive Source\",\"rev\":\"C\",\"io\":0}",
+  "{\"org\":\"pontech.com\",\"cn\":\"Drive Sink\",\"rev\":\"C\",\"io\":0}",
+  "{\"org\":\"pontech.com\",\"cn\":\"BigEasy\",\"rev\":\"C\",\"io\":0,\"label\":[\"step\",\"dir\",\"enable\",\"sleep\",\"ms3\"],\"i2cMask\":40}",
+  "{\"org\":\"pontech.com\",\"cn\":\"BigEasy\",\"rev\":\"C1\",\"io\":0,\"label\":[\"step\",\"dir\",\"enable\",\"sleep\",\"ms2\"],\"i2cMask\":40}",
+  "{\"org\":\"pontech.com\",\"cn\":\"BigEasy\",\"rev\":\"D\",\"io\":0,\"label\":[\"step\",\"dir\",\"enable\",\"ms1\",\"ms2\"],\"i2cMask\":80}",
+  "{\"org\":\"pontech.com\",\"cn\":\"BigEasy\",\"rev\":\"E\",\"io\":0,\"label\":[\"step\",\"dir\",\"enable\",\"ms1\",\"ms2\"],\"i2cMask\":82}"
 };
 
 us8 KardIO[7][6] = {
@@ -223,10 +229,12 @@ void loop() {
       ctr = 0;
 
       if( tokpars.compare("?",'|' ) || tokpars.compare("HELP" ) ) {
-        //MySerial.print("RESET"); PrintCR();
+        MySerial.print("reset, reset the microcontroller"); PrintCR();
         //MySerial.print("LOOPBACK"); PrintCR();
         //MySerial.print(""); PrintCR();
-        MySerial.print("no help");
+        MySerial.print("json, display a list of avaible json strings"); PrintCR();
+        MySerial.print("json.read, read json string from kards 0-6"); PrintCR();
+        MySerial.print("json.writeN, write json string N to kards 0-6"); PrintCR();
         PrintCR();
       }
       else if( tokpars.compare("JSON.READ") ) {
@@ -270,7 +278,7 @@ void loop() {
         } 
       }
       else if( tokpars.compare("JSON") ) {
-        for( i = 0; i < 4; i++ ) {
+        for( i = 0; i < KARD_JSON_MAX; i++ ) {
           Sha1.init();
           Sha1.print(kard_json[i]);
           printHash(Sha1.result(), 4);
