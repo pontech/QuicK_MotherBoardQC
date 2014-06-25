@@ -234,7 +234,7 @@ void loop() {
         //MySerial.print(""); PrintCR();
         MySerial.print("json, display a list of avaible json strings"); PrintCR();
         MySerial.print("json.read, read json string from kards 0-6"); PrintCR();
-        MySerial.print("json.writeN, write json string N to kards 0-6"); PrintCR();
+        MySerial.print("json.write N, write json string N to kards 0-6"); PrintCR();
         PrintCR();
       }
       else if( tokpars.compare("JSON.READ") ) {
@@ -279,6 +279,8 @@ void loop() {
       }
       else if( tokpars.compare("JSON") ) {
         for( i = 0; i < KARD_JSON_MAX; i++ ) {
+          MySerial.print(i, DEC);
+          MySerial.print(": ");
           Sha1.init();
           Sha1.print(kard_json[i]);
           printHash(Sha1.result(), 4);
