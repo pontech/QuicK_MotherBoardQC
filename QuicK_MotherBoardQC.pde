@@ -309,6 +309,10 @@ void loop() {
         /* perform a system unlock sequence */
 
         // starting critical sequence
+#ifdef VIRTUAL_PROGRAM_BUTTON_TRIS
+  VIRTUAL_PROGRAM_BUTTON_TRIS = 0; //Set virtual button as output
+  VIRTUAL_PROGRAM_BUTTON = 1; //push virtual button
+#endif
         SYSKEY = 0x00000000;  //write invalid key to force lock
         SYSKEY = 0xAA996655;  //write key1 to SYSKEY
         SYSKEY = 0x556699AA;  //write key2 to SYSKEY
