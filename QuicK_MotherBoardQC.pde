@@ -1,3 +1,4 @@
+#include "Half_Duplex_Turnaround.h"
 #include "pic32lib/core.h"
 #include "TokenParser/TokenParser.h"
 #include "LTC1257CS8.h"
@@ -18,7 +19,7 @@ us8 led1 = 37;
 us8 led2 = 81;
 #line 20
 
-const us8 KARD_JSON_MAX = 9;
+const us8 KARD_JSON_MAX = 8;
 
 String kard_json[] = {
   "{\"org\":\"pontech.com\",\"cn\":\"ISO Common Cathode\",\"rev\":\"D\",\"io\":31}",
@@ -28,8 +29,7 @@ String kard_json[] = {
   "{\"org\":\"pontech.com\",\"cn\":\"BigEasy\",\"rev\":\"C\",\"io\":0,\"label\":[\"step\",\"dir\",\"enable\",\"sleep\",\"ms3\"],\"i2cMask\":40}",
   "{\"org\":\"pontech.com\",\"cn\":\"BigEasy\",\"rev\":\"C1\",\"io\":0,\"label\":[\"step\",\"dir\",\"enable\",\"sleep\",\"ms2\"],\"i2cMask\":40}",
   "{\"org\":\"pontech.com\",\"cn\":\"BigEasy\",\"rev\":\"D\",\"io\":0,\"label\":[\"step\",\"dir\",\"enable\",\"ms1\",\"ms2\"],\"i2cMask\":80}",
-  "{\"org\":\"pontech.com\",\"cn\":\"BigEasy\",\"rev\":\"E\",\"io\":0,\"label\":[\"step\",\"dir\",\"enable\",\"ms1\",\"ms2\"],\"i2cMask\":82}",
-  "{\"org\":\"pontech.com\",\"cn\":\"Com Kard\",\"rev\":\"D\",\"io\":0,\"uart1a\":true,\"uart1b\":true,\"uart3b\":true:0}"
+  "{\"org\":\"pontech.com\",\"cn\":\"BigEasy\",\"rev\":\"E\",\"io\":0,\"label\":[\"step\",\"dir\",\"enable\",\"ms1\",\"ms2\"],\"i2cMask\":82}"
 };
 
 us8 KardIO[7][6] = {
@@ -48,6 +48,8 @@ us8 KardUnderTest = 3;
 //HardwareSerial& MySerial=Serial1;
 USBSerial& MySerial=Serial;
 us8 buff[0x20];
+SerialHalf MySerial2(&Serial2, 1, true);
+SerialHalf MySerial3(&Serial3, 71, true);
 
 void setup()
 {
@@ -62,8 +64,8 @@ void setup()
   Serial.begin(115200);
   Serial0.begin(115200);
   Serial1.begin(115200);
-  Serial2.begin(115200);
-  Serial3.begin(115200);
+  MySerial2.begin(115200);
+  MySerial3.begin(115200);
   //set all eeprom chip selects to low
   us8 i;
   for( i = 0; i < 7; i++ ) {
@@ -75,8 +77,8 @@ void setup()
   Serial.println("Serial - USB Open");
   Serial0.println("Serial1 - TTL Kard");
   Serial1.println("Serial1 - RS-232");
-  Serial2.println("Serial2 - RS-485");
-  Serial3.println("Serial3 - RS-485");
+  MySerial2.println("Serial2 - RS-485");
+  MySerial3.println("Serial3 - RS-485");
 }
 
 void PrintEE(us8 address)
@@ -334,8 +336,8 @@ void loop() {
         Serial.write('A');
         Serial0.write('A');
         Serial1.write('A');
-        Serial2.write('A');
-        Serial3.write('A');
+        MySerial2.write('A');
+        MySerial3.write('A');
         MySerial.print("OK");
         PrintCR();
       }
