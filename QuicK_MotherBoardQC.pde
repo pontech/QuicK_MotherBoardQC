@@ -18,7 +18,7 @@ us8 led1 = 37;
 us8 led2 = 81;
 #line 20
 
-const us8 KARD_JSON_MAX = 8;
+const us8 KARD_JSON_MAX = 9;
 
 String kard_json[] = {
   "{\"org\":\"pontech.com\",\"cn\":\"ISO Common Cathode\",\"rev\":\"D\",\"io\":31}",
@@ -28,7 +28,8 @@ String kard_json[] = {
   "{\"org\":\"pontech.com\",\"cn\":\"BigEasy\",\"rev\":\"C\",\"io\":0,\"label\":[\"step\",\"dir\",\"enable\",\"sleep\",\"ms3\"],\"i2cMask\":40}",
   "{\"org\":\"pontech.com\",\"cn\":\"BigEasy\",\"rev\":\"C1\",\"io\":0,\"label\":[\"step\",\"dir\",\"enable\",\"sleep\",\"ms2\"],\"i2cMask\":40}",
   "{\"org\":\"pontech.com\",\"cn\":\"BigEasy\",\"rev\":\"D\",\"io\":0,\"label\":[\"step\",\"dir\",\"enable\",\"ms1\",\"ms2\"],\"i2cMask\":80}",
-  "{\"org\":\"pontech.com\",\"cn\":\"BigEasy\",\"rev\":\"E\",\"io\":0,\"label\":[\"step\",\"dir\",\"enable\",\"ms1\",\"ms2\"],\"i2cMask\":82}"
+  "{\"org\":\"pontech.com\",\"cn\":\"BigEasy\",\"rev\":\"E\",\"io\":0,\"label\":[\"step\",\"dir\",\"enable\",\"ms1\",\"ms2\"],\"i2cMask\":82}",
+  "{\"org\":\"pontech.com\",\"cn\":\"Com Kard\",\"rev\":\"D\",\"io\":0,\"uart1a\":true,\"uart1b\":true,\"uart3b\":true:0}"
 };
 
 us8 KardIO[7][6] = {
