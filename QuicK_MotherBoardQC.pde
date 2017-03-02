@@ -62,7 +62,7 @@ void setup()
 
   // initialize serial ports:
   Serial.begin(115200);
-  Serial0.begin(115200);
+  //Serial0.begin(115200);
   Serial1.begin(115200);
   MySerial2.begin(115200);
   MySerial3.begin(115200);
@@ -75,10 +75,10 @@ void setup()
 
   delay(5000);
   Serial.println("Serial - USB Open");
-  Serial0.println("Serial1 - TTL Kard");
-  Serial1.println("Serial1 - RS-232");
-  MySerial2.println("Serial2 - RS-485");
-  MySerial3.println("Serial3 - RS-485");
+//  Serial0.println("Serial1 - TTL Kard");
+//  Serial1.println("Serial1 - RS-232");
+//  MySerial2.println("Serial2 - RS-485");
+//  MySerial3.println("Serial3 - RS-485");
 }
 
 void PrintEE(us8 address)
@@ -214,6 +214,15 @@ void loop() {
   e16 num2;
   e32 num3;
 
+//  if (Serial1.available() > 0) {
+//    MySerial.write(Serial1.read()); // Send it out via usb
+//  }
+//  if (MySerial2.available() > 0) {
+//    MySerial.write(MySerial2.read()); // Send it out via usb
+//  }
+//  if (MySerial3.available() > 0) {
+//    MySerial.write(MySerial3.read()); // Send it out via usb
+//  }
   while (MySerial.available() > 0)
   {
     ch = MySerial.read();
@@ -334,7 +343,6 @@ void loop() {
       }
       else if( tokpars.compare("LOOPBACK" ) ) {
         Serial.write('A');
-        Serial0.write('A');
         Serial1.write('A');
         MySerial2.write('A');
         MySerial3.write('A');
@@ -631,14 +639,14 @@ void loop() {
     }
   }
 
-  while (Serial0.available()) {
-    int inByte = Serial0.read();
-
-    Serial.print("0: You typed: '");
-    Serial.write(inByte); 
-    Serial.println("'");
-  }
-
+//  while (Serial0.available()) {
+//    int inByte = Serial0.read();
+//
+//    Serial.print("0: You typed: '");
+//    Serial.write(inByte); 
+//    Serial.println("'");
+//  }
+//
   while (Serial1.available()) {
     int inByte = Serial1.read();
 
