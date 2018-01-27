@@ -322,7 +322,12 @@ void loop() {
         while(1);
       }
       else if( tokpars.compare("V?",'|') ) {
-        MySerial.print("QuicK-240 Motherboard Quality Control Sofwtare Version x.x");
+        String vers = "QuicK-240 Motherboard Quality Control Sofwtare Version x.x\r\n";
+        MySerial.print(vers.trim());
+        PrintCR();
+        MySerial.print(vers.toLowerCase());
+        PrintCR();
+        MySerial.print(vers.toUpperCase());
         PrintCR();
       }
       else if( tokpars.compare("LOOPBACK" ) ) {
