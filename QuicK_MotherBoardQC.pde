@@ -285,8 +285,8 @@ void loop() {
         for(us8 kard = 0; kard < 7; kard++) {
           for(us8 j = 0; j < 6; j++ ) 
           {
-            digitalWrite(KardIO[kard][j], HIGH);
-            pinMode(KardIO[kard][j], INPUT);
+            digitalWrite(KardIO[kard][j], LOW);
+            //pinMode(KardIO[kard][j], INPUT);
           }
         } 
       }
@@ -446,15 +446,15 @@ void loop() {
           MySerial.print("KARD-");
           MySerial.print(KardUnderTest,DEC);
           MySerial.print(":");
-          digitalWrite(KardIO[KardUnderTest][5],LOW);
-
-          PrintEE(0x50);
           digitalWrite(KardIO[KardUnderTest][5],HIGH);
+
+          PrintEE(0x51);
+          digitalWrite(KardIO[KardUnderTest][5],LOW);
         }
 
-        for( KardUnderTest = 0; KardUnderTest < 7; KardUnderTest++ ) {
-          pinMode(KardIO[KardUnderTest][5], INPUT);
-        }
+        //for( KardUnderTest = 0; KardUnderTest < 7; KardUnderTest++ ) {
+        //  pinMode(KardIO[KardUnderTest][5], INPUT);
+        //}
       }
       else if( tokpars.compare("QC.IN" ) ) {
         for( KardUnderTest = 0; KardUnderTest < 6; KardUnderTest++ ) {
