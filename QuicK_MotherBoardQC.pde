@@ -242,12 +242,26 @@ void loop() {
       ctr = 0;
 
       if( tokpars.compare("?",'|' ) || tokpars.compare("HELP" ) ) {
+        MySerial.print("? This list"); PrintCR();
+        MySerial.print("V? Version"); PrintCR();
         MySerial.print("reset, reset the microcontroller"); PrintCR();
-        //MySerial.print("LOOPBACK"); PrintCR();
-        //MySerial.print(""); PrintCR();
         MySerial.print("json, display a list of avaible json strings"); PrintCR();
         MySerial.print("json.read, read json string from kards 0-6"); PrintCR();
         MySerial.print("json.write N, write json string N to kards 0-6"); PrintCR();
+
+
+        MySerial.print("LOOPBACK Serial loopback testing."); PrintCR();
+        MySerial.print("EEWRITE?"); PrintCR();
+        MySerial.print("EEREAD?"); PrintCR();
+        MySerial.print("EWRITE"); PrintCR();
+        MySerial.print("ERASE"); PrintCR();
+        MySerial.print("QC.EE"); PrintCR();
+        MySerial.print("QC.IN"); PrintCR();
+        MySerial.print("QC.OUT n Test output kard where n = 0-5, 10 for all."); PrintCR();
+        MySerial.print("QC.STEP"); PrintCR();
+        MySerial.print("QC.QAC"); PrintCR();
+        MySerial.print("QC.DAC"); PrintCR();
+
         PrintCR();
       }
       else if( tokpars.compare("JSON.READ") ) {
@@ -490,7 +504,7 @@ void loop() {
         KardUnderTest = num1.value;
         MySerial.print(KardUnderTest,DEC);
         MySerial.print("-");
-        if (KardUnderTest == 00) 
+        if (KardUnderTest == 10) 
         {
           for( i = 0; i < 6; i++ )
           {
