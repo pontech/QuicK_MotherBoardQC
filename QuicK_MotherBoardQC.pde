@@ -224,6 +224,7 @@ void loop() {
 //  if (MySerial3.available() > 0) {
 //    MySerial.write(MySerial3.read()); // Send it out via usb
 //  }
+
   while (MySerial.available() > 0)
   {
     ch = MySerial.read();
@@ -261,8 +262,14 @@ void loop() {
         MySerial.print("QC.STEP"); PrintCR();
         MySerial.print("QC.QAC"); PrintCR();
         MySerial.print("QC.DAC"); PrintCR();
+        MySerial.print("QC.DRV"); PrintCR();
 
         PrintCR();
+      }
+      else if( tokpars.compare("QC.DRV") ) {
+        qc_out(3, 1000);
+        qc_out(4, 1000);
+        qc_out(5, 1000);
       }
       else if( tokpars.compare("JSON.READ") ) {
         us8 kard = 0;
