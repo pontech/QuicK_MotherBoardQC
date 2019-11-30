@@ -329,8 +329,10 @@ void loop() {
           }
         } 
       }
-      else if( tokpars.compare("JSON.DRV") ) {
-        us8 json = 2;
+      else if( tokpars.compare("JSON.DRV?") ) {
+        tokpars.nextToken();
+        num1 = tokpars.to_e16();
+        us8 json = num1.value;
 
         EEPROM_Init();
         for(us8 kard = 3; kard < 6; kard++) {
