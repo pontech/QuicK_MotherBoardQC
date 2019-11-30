@@ -67,12 +67,8 @@ void setup()
   Serial1.begin(115200);
   MySerial2.begin(115200);
   MySerial3.begin(115200);
-  //set all eeprom chip selects to low
-  us8 i;
-  for( i = 0; i < 7; i++ ) {
-    pinMode(KardIO[i][5], OUTPUT);
-    digitalWrite(KardIO[i][5],LOW);
-  }
+
+  EEPROM_Init();
 
   delay(5000);
   Serial.println("Serial - USB Open");
@@ -97,6 +93,17 @@ void PrintEE(us8 address)
     MySerial.print(".");
   }
   PrintCR();
+}
+
+us8 EEPROM_Init()
+{
+  //set all eeprom chip selects to low
+  us8 i;
+  for( i = 0; i < 7; i++ ) {
+    pinMode(KardIO[i][5], OUTPUT);
+    digitalWrite(KardIO[i][5],LOW);
+  }
+  delay(10);
 }
 
 us8 EEPROM_Read(us8 cs, us8 ADDR, us16 *bytes_read)
@@ -137,6 +144,7 @@ void EEPROM_Write(us8 cs, us8 ADDR, us8 val)
 
 void EEPROM_Write(us8 cs, us8 ADDR, String str)
 {
+  EEPROM_Init();
   us16 len = str.length();
   for(int i = 0; i < len; i++) {
      EEPROM_Write(cs, ADDR + i, str[i]);
@@ -145,6 +153,7 @@ void EEPROM_Write(us8 cs, us8 ADDR, String str)
 
 void EEPROM_Write_Pad(us8 cs, us16 address, us16 last_address, us8 pad)
 {
+  EEPROM_Init();
   for(int i = address; i <= last_address; i++) {
      EEPROM_Write(cs, i, pad);
   }
@@ -152,6 +161,7 @@ void EEPROM_Write_Pad(us8 cs, us16 address, us16 last_address, us8 pad)
 
 String EEPROM_Write_JSON(us8 kard, us16 json)
 {
+  EEPROM_Init();
   MySerial.print("Kard");
   MySerial.print(kard, DEC);
   MySerial.print(":");
@@ -178,6 +188,7 @@ char waitforCR() {
 
 String EEPROM_Read_JSON(us8 kard)
 {
+  EEPROM_Init();
   String json;
   us16 address;
   MySerial.print("kard");
