@@ -263,8 +263,15 @@ void loop() {
         MySerial.print("QC.QAC"); PrintCR();
         MySerial.print("QC.DAC"); PrintCR();
         MySerial.print("QC.DRV"); PrintCR();
+        MySerial.print("QC.ISO"); PrintCR();
 
         PrintCR();
+      }
+      else if( tokpars.compare("QC.ISO") ) {
+        if( qc_iso(1000) ) 
+          Serial.println("all iso kards pass");
+        else
+          Serial.println("at least one iso kard failed");
       }
       else if( tokpars.compare("QC.DRV") ) {
         qc_out(3, 1000);
