@@ -83,9 +83,9 @@ uint8_t qc_iso(uint32_t on_time)
   for( KardUnderTest = 1; KardUnderTest < 6; KardUnderTest++ ) {
     pass = pass && kardpass[KardUnderTest];
     if( kardpass[KardUnderTest] == true ) 
-      Serial.print("pass ");
+      MySerial.print("pass ");
     else 
-      Serial.print("FAIL ");
+      MySerial.print("FAIL ");
   }
   Serial.println();
   Serial.println();
