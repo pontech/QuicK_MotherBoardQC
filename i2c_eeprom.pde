@@ -132,4 +132,27 @@ String EEPROM_Read_JSON(us8 kard)
   return json;
 }
 
+//////////////////////////////////////////////////
+// High Level EEPROM Commands
+//////////////////////////////////////////////////
+void EEPROM_JSON_WRITE(us8 json, us8 kard)
+{
+  EEPROM_Init();
+  String json_write = EEPROM_Write_JSON(kard, json);
+  String json_read = EEPROM_Read_JSON(kard);
+  
+  if( json_write == json_read ) {
+    for(us8 j = 0; j < 6; j++ ) 
+    {
+      pinMode(KardIO[kard][j], OUTPUT);
+      digitalWrite(KardIO[kard][j], LOW);
+    }
+  }
+  else {
+    MySerial.println("Mismatch:");
+    MySerial.println(json_write);
+    MySerial.println(json_read);
+  }
+  MySerial.println("=========================");
+}
 

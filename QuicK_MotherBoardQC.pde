@@ -162,37 +162,12 @@ void loop() {
         }
       }
       else if( tokpars.compare("JSON.WRITE?") ) {
-        //tokpars.nextToken();
-        //num1 = tokpars.to_e16();
-        //us8 kard = num1.value;
         tokpars.nextToken();
         num1 = tokpars.to_e16();
         us8 json = num1.value;
 
         for(us8 kard = 0; kard < 7; kard++) {
-          String json_write = EEPROM_Write_JSON(kard, json);
-          String json_read = EEPROM_Read_JSON(kard);
-          
-          if( json_write == json_read ) {
-            for(us8 j = 0; j < 6; j++ ) 
-            {
-              pinMode(KardIO[kard][j], OUTPUT);
-              digitalWrite(KardIO[kard][j], LOW);
-            }
-          }
-          else {
-            MySerial.println("Mismatch:");
-            MySerial.println(json_write);
-            MySerial.println(json_read);
-          }
-          MySerial.println("=========================");
-        } 
-        for(us8 kard = 0; kard < 7; kard++) {
-          for(us8 j = 0; j < 6; j++ ) 
-          {
-            digitalWrite(KardIO[kard][j], LOW);
-            //pinMode(KardIO[kard][j], INPUT);
-          }
+          EEPROM_JSON_WRITE(json, kard);
         } 
       }
       else if( tokpars.compare("JSON.DRV?") ) {
@@ -200,26 +175,18 @@ void loop() {
         num1 = tokpars.to_e16();
         us8 json = num1.value;
 
-        EEPROM_Init();
         for(us8 kard = 3; kard < 6; kard++) {
-          String json_write = EEPROM_Write_JSON(kard, json);
-          String json_read = EEPROM_Read_JSON(kard);
-          
-          if( json_write == json_read ) {
-            for(us8 j = 0; j < 6; j++ ) 
-            {
-              pinMode(KardIO[kard][j], OUTPUT);
-              digitalWrite(KardIO[kard][j], LOW);
-            }
-          }
-          else {
-            MySerial.println("Mismatch:");
-            MySerial.println(json_write);
-            MySerial.println(json_read);
-          }
-          MySerial.println("=========================");
+          EEPROM_JSON_WRITE(json, kard);
         } 
-        EEPROM_Init();
+      }
+      else if( tokpars.compare("JSON.ISO?") ) {
+        tokpars.nextToken();
+        num1 = tokpars.to_e16();
+        us8 json = num1.value;
+
+        for(us8 kard = 1; kard < 6; kard++) {
+          EEPROM_JSON_WRITE(json, kard);
+        } 
       }
       else if( tokpars.compare("JSON") ) {
         for( i = 0; i < KARD_JSON_MAX; i++ ) {
