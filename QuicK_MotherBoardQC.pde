@@ -329,6 +329,30 @@ void loop() {
           }
         } 
       }
+      else if( tokpars.compare("JSON.DRV") ) {
+        us8 json = 2;
+
+        EEPROM_Init();
+        for(us8 kard = 3; kard < 6; kard++) {
+          String json_write = EEPROM_Write_JSON(kard, json);
+          String json_read = EEPROM_Read_JSON(kard);
+          
+          if( json_write == json_read ) {
+            for(us8 j = 0; j < 6; j++ ) 
+            {
+              pinMode(KardIO[kard][j], OUTPUT);
+              digitalWrite(KardIO[kard][j], LOW);
+            }
+          }
+          else {
+            MySerial.println("Mismatch:");
+            MySerial.println(json_write);
+            MySerial.println(json_read);
+          }
+          MySerial.println("=========================");
+        } 
+        EEPROM_Init();
+      }
       else if( tokpars.compare("JSON") ) {
         for( i = 0; i < KARD_JSON_MAX; i++ ) {
           MySerial.print(i, DEC);
