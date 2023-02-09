@@ -1,4 +1,9 @@
+// Tested on:
 // MPIDE0023 - 20140316
+
+// chipKIT Tool Chain (Add to Additional Boards Manager URL's list):
+// https://github.com/chipKIT32/chipKIT-core/raw/master/package_chipkit_index.json
+
 #include "Half_Duplex_Turnaround.h"
 #include "pic32lib/core.h"
 #include "TokenParser/TokenParser.h"
@@ -20,7 +25,7 @@ us8 led1 = 37;
 us8 led2 = 81;
 #line 20
 
-const us8 KARD_JSON_MAX = 8;
+const us8 KARD_JSON_MAX = 9;
 
 String kard_json[] = {
   "{\"org\":\"pontech.com\",\"cn\":\"ISO Common Cathode\",\"rev\":\"D\",\"io\":31}",
@@ -30,7 +35,8 @@ String kard_json[] = {
   "{\"org\":\"pontech.com\",\"cn\":\"BigEasy\",\"rev\":\"C\",\"io\":0,\"label\":[\"step\",\"dir\",\"enable\",\"sleep\",\"ms3\"],\"i2cMask\":40}",
   "{\"org\":\"pontech.com\",\"cn\":\"BigEasy\",\"rev\":\"C1\",\"io\":0,\"label\":[\"step\",\"dir\",\"enable\",\"sleep\",\"ms2\"],\"i2cMask\":40}",
   "{\"org\":\"pontech.com\",\"cn\":\"BigEasy\",\"rev\":\"D\",\"io\":0,\"label\":[\"step\",\"dir\",\"enable\",\"ms1\",\"ms2\"],\"i2cMask\":80}",
-  "{\"org\":\"pontech.com\",\"cn\":\"BigEasy\",\"rev\":\"E\",\"io\":0,\"label\":[\"step\",\"dir\",\"enable\",\"ms1\",\"ms2\"],\"i2cMask\":82}"
+  "{\"org\":\"pontech.com\",\"cn\":\"BigEasy\",\"rev\":\"E\",\"io\":0,\"label\":[\"step\",\"dir\",\"enable\",\"ms1\",\"ms2\"],\"i2cMask\":82}",
+  "{\"org\":\"pontech.com\",\"cn\":\"BO-100-QC\",\"rev\":\"A\",\"io\":0}"
 };
 
 us8 KardIO[7][6] = {
@@ -129,7 +135,7 @@ void loop() {
 
 
         MySerial.print("LOOPBACK Serial loopback testing."); PrintCR();
-        MySerial.print("EEWRITE?"); PrintCR();
+        MySerial.print("EEWRITE kard address value"); PrintCR();
         MySerial.print("EEREAD?"); PrintCR();
         MySerial.print("EWRITE"); PrintCR();
         MySerial.print("ERASE"); PrintCR();
@@ -141,8 +147,12 @@ void loop() {
         MySerial.print("QC.DAC"); PrintCR();
         MySerial.print("QC.DRV"); PrintCR();
         MySerial.print("QC.ISO"); PrintCR();
+        MySerial.print("QC.SLOTS, Use the BO-100-QC to test path from uC to rail by shorting pins"); PrintCR();
 
         PrintCR();
+      }
+      else if( tokpars.compare("QC.SLOTS") ) {
+        qc_slots();
       }
       else if( tokpars.compare("QC.ISO") ) {
         if( qc_iso(1000) ) 
@@ -591,5 +601,3 @@ void PrintCR() {
   MySerial.print("\r");
 #endif
 }
-
-
